@@ -6,7 +6,7 @@ export default function IndexPage() {
       <h1>use example :D</h1>
       <div style={{ fontSize: "2em" }}>
         <Link href="/create">
-          <a>Create an Essay</a>
+          <a>Create an Easdfasdfasdfssay</a>
         </Link>
       </div>
 

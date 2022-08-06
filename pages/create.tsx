@@ -33,6 +33,16 @@ export default function CreatePage() {
   // disable button when publishing edition
   const [publishing, setPublishing] = useState(false);
 
+  const [selectedFile, setSelectedFile] = useState();
+	const [isFilePicked, setIsFilePicked] = useState(false);
+
+	const changeHandler = (event: any) => {
+		setSelectedFile(event.target.files[0]);
+	};
+
+	const handleSubmission = () => {
+	};
+
   // WAGMI (hooks for ethereum)
   const { address, isConnected } = useAccount()
   const signer = useSigner();
@@ -101,14 +111,9 @@ export default function CreatePage() {
         value={description}
       />
       <Box marginBottom="2" />
-      <Heading>Write your essay:</Heading>
-      <MarkdownEditor
-        onChange={setEssay}
-        value={essay}
-        visible={true}
-        preview="live"
-        height={400}
-      />
+      <Heading>Write your esssdfsdfsfay:</Heading>
+      <input type="file" name="file" onChange={changeHandler} accept=".mid" />
+      
       {isConnected ? (
       <Button disabled={publishing} onClick={upload}>
         {publishing ? "publishing..." : "Publish!"}
