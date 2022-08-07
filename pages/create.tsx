@@ -8,6 +8,8 @@ import type {IERC721Drop} from '@zoralabs/nft-drop-contracts/dist/typechain/Zora
 import { ZORA_CREATOR_CONTRACT_ADDRESS } from "../constants";
 import { parseEther } from "ethers/lib/utils";
 import ZoraCreatorABI from '@zoralabs/nft-drop-contracts/dist/artifacts/ZoraNFTCreatorV1.sol/ZoraNFTCreatorV1.json'
+import { fileURLToPath } from "url";
+import { Midi } from '@tonejs/midi'
 
 function getSalesConfig(): IERC721Drop.SalesConfigurationStruct {
   return {
@@ -26,21 +28,34 @@ function getSalesConfig(): IERC721Drop.SalesConfigurationStruct {
 }
 
 export default function CreatePage() {
-  // content for essay, title, and description
-  const [essay, setEssay] = useState("## My essay\n\nWrite here");
   const [title, setTitle] = useState("My title");
-  const [description, setDescription] = useState("Tagline");
-  // disable button when publishing edition
+  const [description, setDescription] = useState<String | ArrayBuffer | null>();
   const [publishing, setPublishing] = useState(false);
 
-  const [selectedFile, setSelectedFile] = useState();
+  const [file, setFile] = useState({name: '', type: '', size: ''});
 	const [isFilePicked, setIsFilePicked] = useState(false);
+	const [midi, setMidi] = useState<any>();
 
-	const changeHandler = (event: any) => {
-		setSelectedFile(event.target.files[0]);
-	};
+  //functions for handling file form logic
+	const handleClientUpload = (event: any) => {
+		setFile(event.target.files[0]);
+    setIsFilePicked(true);
 
-	const handleSubmission = () => {
+    const uploadedFile = event.target.files[0];
+    const reader = new FileReader();
+    reader.readAsText(uploadedFile);
+    
+    //encode midi file and set nft parameters
+    reader.onload = function() {
+      const encodedMidi = Buffer.from(reader.result as any).toString('base64');
+     
+      setMidi(reader.result);
+      setDescription(encodedMidi);
+      setTitle(uploadedFile.name);
+    };
+    reader.onerror = function() {
+      console.log('FILE ERROR: ', reader.error);
+    };
 	};
 
   // WAGMI (hooks for ethereum)
@@ -55,13 +70,13 @@ export default function CreatePage() {
     signerOrProvider: signer.data || provider,
   })
 
+    //todo fix for midi not md
   const upload = useCallback(async () => {
     setPublishing(true);
-    const essayHTML = document!.querySelector(".md-editor-preview")!.innerHTML;
     const publishRequest = await fetch("/api/publish", {
       method: "post",
       body: JSON.stringify({
-        essay: essayHTML,
+        midi,
         title,
         description,
       }),
@@ -87,7 +102,7 @@ export default function CreatePage() {
     );
 
     setPublishing(false);
-  }, [essay, title, description, address, signer]);
+  }, [midi, title, description, address, signer]);
 
   return (
     <div>
@@ -100,20 +115,25 @@ export default function CreatePage() {
           dangerouslySetInnerHTML={{ __html: makeSVGCard(title, description) }}
         />
       </div>
-      <Input
-        label="Title"
-        onChange={(e) => setTitle(e.target.value)}
-        value={title}
-      />
-      <Input
-        label="Description"
-        onChange={(e) => setDescription(e.target.value)}
-        value={description}
-      />
+  
+
+      <Heading>Upload MIDI file:</Heading>
       <Box marginBottom="2" />
-      <Heading>Write your esssdfsdfsfay:</Heading>
-      <input type="file" name="file" onChange={changeHandler} accept=".mid" />
+
+      {isFilePicked ? (
+        <div>
+          <p>Filename: {file.name}</p>
+          <p>File type: {file.type}</p>
+          <p>File size: {file.size} bytes</p>
+        </div>
+      ) : (
+        <input type="file" name="file" onChange={handleClientUpload} accept=".mid" />
+      )}
       
+      <div>
+        <p>{midi}</p>
+      </div>
+
       {isConnected ? (
       <Button disabled={publishing} onClick={upload}>
         {publishing ? "publishing..." : "Publish!"}
