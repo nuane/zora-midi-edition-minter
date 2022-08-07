@@ -102,13 +102,13 @@ export default async function handler(req, res) {
 
   const { title, description, midi } = JSON.parse(req.body);
 
-  const imageCID = await uploadToNFTStorage(
+  const imageCID = await uploadToPinata(
     makeSVGCard(title, description),
     "image/svg+xml"
   );
 
   const essayHTML = makeHTMLPage(title, midi);
-  const essayCID = await uploadToNFTStorage(essayHTML, "text/html");
+  const essayCID = await uploadToPinata(essayHTML, "text/html");
 
   // const nftest = await uploadToNFTStorage(title, description, midi);
   // console.log(nftest);

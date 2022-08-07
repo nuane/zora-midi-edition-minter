@@ -90,7 +90,7 @@ export default function CreatePage() {
 
     await contract.createEdition(
       title,
-      title.toUpperCase().replace(/^[A-Za-z0-9]/g, '').substring(0, 8),
+      'MIDINFTDOA',
       100, // edition size
       1000, // 10%,
       address!,
